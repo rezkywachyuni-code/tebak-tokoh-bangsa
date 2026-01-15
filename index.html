@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis 20 Tokoh Bangsa - Nasionalis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;1,400&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --indo-red: #b30000; --indo-white: #ffffff; --indo-gold: #c5a021; --text-dark: #2c3e50; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f0f0; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; border-top: 10px solid var(--indo-red); }
+        #game-container { background: var(--indo-white); width: 95%; max-width: 650px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; border: 2px solid var(--indo-gold); position: relative; }
+        .timer-container { width: 100%; height: 12px; background: #ddd; border-radius: 6px; margin: 15px 0; overflow: hidden; }
+        #timer-bar { width: 100%; height: 100%; background: var(--indo-red); transition: width 1s linear; }
+        #image-frame { width: 160px; height: 160px; margin: 0 auto 15px; border-radius: 50%; border: 4px solid var(--indo-red); outline: 3px solid var(--indo-gold); overflow: hidden; background: #eee; }
+        #tokoh-image { width: 100%; height: 100%; object-fit: cover; }
+        #quote-box { font-family: 'Merriweather', serif; font-style: italic; color: #444; background: #fffbe6; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--indo-gold); min-height: 50px; }
+        #clue-box { background: var(--indo-red); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { padding: 12px; border: 2px solid var(--indo-red); border-radius: 8px; background: white; cursor: pointer; font-weight: bold; font-family: 'Poppins'; transition: 0.3s; }
+        button:hover { background: var(--indo-red); color: white; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-nav { background: #444; color: white; border: none; font-size: 0.8rem; flex: 1; }
+        .btn-skip { background: var(--indo-gold); }
+        #score-info { font-weight: bold; color: var(--indo-red); margin-bottom: 5px; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="score-info">SOAL 1 / 20</div>
+    <div class="timer-container"><div id="timer-bar"></div></div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <span id="timer-text">⏱️ 30s</span>
+        <span id="total-score">Skor: 0</span>
+    </div>
+
+    <div id="image-frame">
+        <img id="tokoh-image" src="" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg/200px-National_emblem_of_Indonesia_Garuda_Pancasila.svg.png'">
+    </div>
+
+    <div id="quote-box">"Kutipan"</div>
+    <div id="clue-box">Petunjuk</div>
+    
+    <div class="options" id="options-container"></div>
+
+    <div class="nav-buttons">
+        <button class="btn-nav" onclick="prev()">⬅️ Mundur</button>
+        <button class="btn-nav btn-skip" onclick="skip()">Lewati (Skip) ⏭️</button>
+        <button class="btn-nav" onclick="next()">Maju ➡️</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { name: "R.A. Kartini", quote: "Habis Gelap Terbitlah Terang.", clue: "Pejuang hak perempuan yang rajin menulis surat ke teman-temannya di Belanda.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Kartini.jpg/220px-Kartini.jpg", options: ["R.A. Kartini", "Dewi Sartika", "Cut Nyak Dien", "Fatmawati"] },
+        { name: "Ki Hajar Dewantara", quote: "Tut Wuri Handayani.", clue: "Bapak Pendidikan Nasional yang mendirikan sekolah Taman Siswa.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Ki_Hadjar_Dewantara_Mimbar_Umum_18_November_1950_p1.jpg/220px-Ki_Hadjar_Dewantara_Mimbar_Umum_18_November_1950_p1.jpg", options: ["Agus Salim", "Ki Hajar Dewantara", "Moh. Hatta", "Dr. Sutomo"] },
+        { name: "Ir. Soekarno", quote: "Beri aku 10 pemuda, niscaya akan kuguncangkan dunia.", clue: "Proklamator dan Presiden pertama Republik Indonesia.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Presiden_Sukarno.jpg/220px-Presiden_Sukarno.jpg", options: ["Suharto", "Moh. Hatta", "Ir. Soekarno", "Adam Malik"] },
+        { name: "Moh. Hatta", quote: "Kurang cerdas dapat diperbaiki, kurang jujur sulit diperbaiki.", clue: "Wakil Presiden pertama RI yang dijuluki Bapak Koperasi.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Mohammad_Hatta_1950.jpg/220px-Mohammad_Hatta_1950.jpg", options: ["Moh. Hatta", "Sutan Sjahrir", "Ali Alatas", "Hamengkubuwono IX"] },
+        { name: "Dewi Sartika", quote: "Anak perempuan harus cakap dalam urusan rumah tangga dan berilmu.", clue: "Tokoh pendidikan dari Jawa Barat yang mendirikan Sekolah Istri.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Dewi_Sartika.jpg/220px-Dewi_Sartika.jpg", options: ["Nyi Ageng Serang", "Kartini", "Dewi Sartika", "Maria Maramis"] },
+        { name: "Butet Manurung", quote: "Pendidikan bukanlah proses pengasingan diri dari lingkungan.", clue: "Pendiri Sokola Rimba yang mengajar anak-anak di pedalaman hutan Jambi.", img: "https://via.placeholder.com/160/c5a021/ffffff?text=Butet+Manurung", options: ["Najwa Shihab", "Susi Pudjiastuti", "Butet Manurung", "Tri Rismaharini"] },
+        { name: "B.J. Habibie", quote: "Jadilah mata air yang jernih.", clue: "Ahli pesawat terbang jenius dan Presiden ke-3 Republik Indonesia.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Bacharuddin_Jusuf_Habibie_official_portrait.jpg/220px-Bacharuddin_Jusuf_Habibie_official_portrait.jpg", options: ["Gus Dur", "B.J. Habibie", "Megawati", "SBY"] },
+        { name: "Jenderal Soedirman", quote: "Robek-robeklah badanku, potong-potonglah jasadku, tapi jiwaku tidak akan menyerah.", clue: "Panglima Besar TNI yang memimpin gerilya meski hanya dengan satu paru-paru.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Sudirman.jpg/220px-Sudirman.jpg", options: ["Ahmad Yani", "Gatot Subroto", "Jenderal Soedirman", "A.H. Nasution"] },
+        { name: "Cut Nyak Dien", quote: "Kita tidak akan tunduk pada penjajah.", clue: "Pahlawan wanita pemberani dari Aceh yang berjuang hingga masa tuanya.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Tjut_Nja%27_Dhien.jpg/220px-Tjut_Nja%27_Dhien.jpg", options: ["Cut Meutia", "Cut Nyak Dien", "Martha Tiahahu", "Siti Walidah"] },
+        { name: "Pattimura", quote: "Pattimura-Pattimura muda akan bangkit.", clue: "Pahlawan dari Maluku yang memimpin perlawanan di Benteng Duurstede.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Pattimura_painting.jpg/220px-Pattimura_painting.jpg", options: ["Sultan Hasanuddin", "Pattimura", "Antasari", "Imam Bonjol"] },
+        { name: "Sultan Hasanuddin", quote: "Ayam Jantan dari Timur.", clue: "Raja Gowa yang sangat berani melawan monopoli perdagangan VOC.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Sultan_Hasanuddin.jpg/220px-Sultan_Hasanuddin.jpg", options: ["Sultan Agung", "Sultan Hasanuddin", "Arung Palakka", "Sultan Baabullah"] },
+        { name: "KH Ahmad Dahlan", quote: "Kasih sayang adalah dasar pendidikan.", clue: "Pendiri organisasi Muhammadiyah yang bergerak di bidang pendidikan dan sosial.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Ahmad_Dahlan.jpg/220px-Ahmad_Dahlan.jpg", options: ["KH Ahmad Dahlan", "KH Hasyim Asyari", "Buya Hamka", "Agus Salim"] },
+        { name: "KH Hasyim Asy'ari", quote: "Hubbul Wathon Minal Iman (Cinta tanah air sebagian dari iman).", clue: "Pendiri Nahdlatul Ulama (NU) dan pejuang besar dari pesantren.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Hasyim_Asy%27ari.jpg/220px-Hasyim_Asy%27ari.jpg", options: ["Wahid Hasyim", "Gus Dur", "KH Hasyim Asy'ari", "Ahmad Dahlan"] },
+        { name: "WR Supratman", quote: "Indonesia Raya merdeka, merdeka!", clue: "Pencipta lagu kebangsaan Indonesia Raya yang pertama kali dikumandangkan tahun 1928.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Wage_Rudolf_Supratman.jpg/220px-Wage_Rudolf_Supratman.jpg", options: ["Ismail Marzuki", "WR Supratman", "Kusbini", "Gesang"] },
+        { name: "Gus Dur", quote: "Gitu aja kok repot!", clue: "Bapak Pluralisme Indonesia yang menjabat sebagai Presiden ke-4 RI.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Abdurrahman_Wahid_official_portrait.jpg/220px-Abdurrahman_Wahid_official_portrait.jpg", options: ["Gus Dur", "Habibie", "Megawati", "Suharto"] },
+        { name: "Fatmawati", quote: "Merah putih berkibar di angkasa.", clue: "Ibu Negara yang menjahit bendera Merah Putih untuk Proklamasi 1945.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fatmawati_1954.jpg/220px-Fatmawati_1954.jpg", options: ["Ainun Habibie", "Fatmawati", "Kartini", "Megawati"] },
+        { name: "Pangeran Diponegoro", quote: "Keadilan adalah hak semua manusia.", clue: "Pemimpin Perang Jawa melawan Belanda yang terkenal dengan strategi gerilyanya.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Pangeran_Diponegoro_Painting.jpg/220px-Pangeran_Diponegoro_Painting.jpg", options: ["Imam Bonjol", "Pangeran Diponegoro", "Sultan Agung", "Antasari"] },
+        { name: "Tan Malaka", quote: "Ingatlah! Bahwa dari dalam kubur, suara saya akan lebih keras.", clue: "Bapak Republik Indonesia yang menulis buku legendaris 'Madilog'.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tan_Malaka_1945.jpg/220px-Tan_Malaka_1945.jpg", options: ["Sutan Sjahrir", "Tan Malaka", "Musso", "Semaun"] },
+        { name: "Buya Hamka", quote: "Tugas kita bukanlah untuk berhasil, tapi untuk mencoba.", clue: "Ulama, politikus, dan sastrawan besar penulis 'Tenggelamnya Kapal Van der Wijck'.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Hamka.JPG/220px-Hamka.JPG", options: ["Natsir", "Buya Hamka", "Agus Salim", "M. Roem"] },
+        { name: "I Gusti Ngurah Rai", quote: "Puputan!", clue: "Pahlawan dari Bali yang gugur dalam pertempuran Margarana demi membela tanah air.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/I_Gusti_Ngurah_Rai.jpg/220px-I_Gusti_Ngurah_Rai.jpg", options: ["Ketut Jelantik", "Ngurah Rai", "Udayana", "Anas"] }
+    ];
+
+    let current = 0; let score = 0; let timer; let timeLeft = 30;
+
+    function load() {
+        clearInterval(timer); timeLeft = 30;
+        const q = quizData[current];
+        document.getElementById('score-info').innerText = `SOAL ${current + 1} / ${quizData.length}`;
+        document.getElementById('tokoh-image').src = q.img;
+        document.getElementById('quote-box').innerText = `"${q.quote}"`;
+        document.getElementById('clue-box').innerText = q.clue;
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = "";
+        q.options.forEach(opt => {
+            const b = document.createElement('button');
+            b.innerText = opt;
+            b.onclick = () => check(opt, b);
+            container.appendChild(b);
+        });
+        startTimer();
+    }
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-text').innerText = `⏱️ ${timeLeft}s`;
+            document.getElementById('timer-bar').style.width = (timeLeft/30)*100 + "%";
+            if(timeLeft <= 0) skip();
+        }, 1000);
+    }
+
+    function check(ans, btn) {
+        clearInterval(timer);
+        if(ans === quizData[current].name) {
+            score += 10; btn.style.background = "#27ae60"; btn.style.color = "white";
+        } else {
+            btn.style.background = "#c0392b"; btn.style.color = "white";
+        }
+        document.getElementById('total-score').innerText = `Skor: ${score}`;
+        setTimeout(next, 800);
+    }
+
+    function next() { if(current < quizData.length-1) { current++; load(); } else { alert("Kuis Selesai! Skor Akhir: " + score); } }
+    function prev() { if(current > 0) { current--; load(); } }
+    function skip() { next(); }
+
+    load();
+</script>
+</body>
+</html>
